@@ -173,7 +173,7 @@ func main() {
 
 			cmd.Wait()
 
-			logger.Info("Finsihed command")
+			logger.Info("Finished command")
 		}
 		wg.Done()
 	}()
