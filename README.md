@@ -21,6 +21,14 @@ Via Go
 go get github.com/ahmet2mir/go-webexec
 ```
 
+Via Script
+
+```
+curl -sfL https://raw.githubusercontent.com/ahmet2mir/go-webexec/main/scripts/install.sh | sh
+```
+
+Or check Release page
+
 ## Usage
 
 ### Start server and service
