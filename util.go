@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"time"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -37,16 +38,18 @@ func execCommand(script string, args string, timeout time.Duration) (string, err
 	}
 	defer cancel()
 
-	if output, err := exec.CommandContext(ctx, script, args).CombinedOutput(); err != nil {
+	a := strings.Split(args, " ")
+
+	if v, err := exec.CommandContext(ctx, script, a...).CombinedOutput(); err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
 			logger.WithFields(log.Fields{"error": err.Error()}).Error("execCommand(): Timeout Exceed")
-			return "", fmt.Errorf("execCommand(): TimeoutError '%v'", err)
+			return "", fmt.Errorf("execCommand(): TimeoutError '%v', output '%v", err, string(v))
 		} else {
 			logger.WithFields(log.Fields{"error": err.Error()}).Error("execCommand(): Non-zero exit code")
-			return "", fmt.Errorf("execCommand(): ExitCodeNotZero '%v'", err)
+			return "", fmt.Errorf("execCommand(): ExitCodeNotZero '%v', output '%v", err, string(v))
 		}
 	} else {
-		return string(output), nil
+		return string(v), nil
 	}
 }
 

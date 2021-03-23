@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"strconv"
 	"sync"
+	"syscall"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -59,10 +61,10 @@ func (cfg *Config) uploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	logger.Debug(fmt.Sprintf("File Name: %+v\n", handler.Filename))
-	logger.Debug(fmt.Sprintf("File Size: %+v\n", handler.Size))
-	logger.Debug(fmt.Sprintf("File Mode: %+v\n", mode))
-	logger.Debug(fmt.Sprintf("File MIME: %+v\n", handler.Header))
+	logger.WithFields(log.Fields{"filename": handler.Filename}).Debug("File Name")
+	logger.WithFields(log.Fields{"size": handler.Size}).Debug("File Size")
+	logger.WithFields(log.Fields{"mode": mode}).Debug("File Mode")
+	logger.WithFields(log.Fields{"mime": handler.Header}).Debug("File MIME")
 
 	fileDest, err := saveFile(file, cfg.baseDir, handler.Filename, mode)
 	if err != nil {
@@ -145,7 +147,7 @@ func main() {
 
 	// start http server
 	go func() {
-		logger.Info(fmt.Sprintf(fmt.Sprintf("Running HTTP server and listen on: %+v\n", address)))
+		logger.WithFields(log.Fields{"address": address}).Info("Running HTTP server and listen")
 		logger.Fatal(http.ListenAndServe(address, nil))
 		wg.Done()
 	}()
@@ -153,9 +155,16 @@ func main() {
 	// start command
 	go func() {
 		if *command != "" {
-			logger.Info(fmt.Sprintf("Running command '%+v' and args '%+v'\n", *command, *args))
+			logger.WithFields(log.Fields{"command": *command, "args": *args}).Info("Running command")
 
-			cmd := exec.Command(*command, *args)
+			a := strings.Split(*args, " ")
+
+			cmd := exec.Command(*command, a...)
+			cmd.SysProcAttr = &syscall.SysProcAttr{
+				Setpgid: true,
+			}
+			cmd.Env = os.Environ()
+
 			stdout, _ := cmd.StdoutPipe()
 			err := cmd.Start()
 			if err != nil {
