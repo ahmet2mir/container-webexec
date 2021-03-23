@@ -8,8 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"time"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )

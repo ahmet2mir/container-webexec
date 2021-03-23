@@ -8,9 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"sync"
-	"syscall"
 	"strings"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -160,9 +159,6 @@ func main() {
 			a := strings.Split(*args, " ")
 
 			cmd := exec.Command(*command, a...)
-			cmd.SysProcAttr = &syscall.SysProcAttr{
-				Setpgid: true,
-			}
 			cmd.Env = os.Environ()
 
 			stdout, _ := cmd.StdoutPipe()
