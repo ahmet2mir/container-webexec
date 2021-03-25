@@ -40,7 +40,10 @@ func execCommand(script string, args string, timeout time.Duration) (string, err
 
 	a := strings.Split(args, " ")
 
-	if v, err := exec.CommandContext(ctx, script, a...).CombinedOutput(); err != nil {
+	c := exec.CommandContext(ctx, script, a...)
+	c.Env = os.Environ()
+
+	if v, err := c.CombinedOutput(); err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
 			logger.WithFields(log.Fields{"error": err.Error()}).Error("execCommand(): Timeout Exceed")
 			return "", fmt.Errorf("execCommand(): TimeoutError '%v', output '%v", err, string(v))
